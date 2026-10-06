@@ -1,0 +1,173 @@
+export type AnswerType = "MITOS" | "FAKTA";
+
+export interface MitosFaktaQuestion {
+  id: number;
+  category: string;
+  statement: string;
+  answer: AnswerType;
+  explanation: string;
+  keyMessage: string;
+}
+
+export const MITOS_FAKTA_QUESTIONS: MitosFaktaQuestion[] = [
+  {
+    id: 1,
+    category: "Stigma & Victim Blaming",
+    statement: "Korban harus punya bukti lengkap dulu sebelum melapor.",
+    answer: "MITOS",
+    explanation: "Pelaporan awal tidak harus menunggu seluruh bukti terkumpul. Korban justru membutuhkan bantuan awal untuk memahami pilihan layanan, mencatat kronologi, menjaga keamanan diri, dan memperoleh arahan tindak lanjut. Ketiadaan bukti lengkap tidak boleh menjadi alasan untuk menunda akses bantuan.",
+    keyMessage: "Korban tetap dapat mencari bantuan dan melakukan pelaporan awal meskipun bukti belum lengkap.",
+  },
+  {
+    id: 2,
+    category: "Kerahasiaan & Keamanan Data",
+    statement: "Sistem pelaporan yang baik harus menjaga kerahasiaan korban.",
+    answer: "FAKTA",
+    explanation: "Kerahasiaan merupakan prinsip penting dalam pelaporan kekerasan seksual. Identitas, kontak, kronologi, dan dokumen harus dikelola secara terbatas. Sistem digital yang baik perlu memiliki alur akses yang jelas dan penyimpanan data yang aman agar korban merasa terlindungi.",
+    keyMessage: "Keamanan dan privasi korban adalah bagian utama dari sistem pelaporan yang ramah korban.",
+  },
+  {
+    id: 3,
+    category: "Stigma & Victim Blaming",
+    statement: "Jika korban tidak melawan, berarti itu bukan kekerasan seksual.",
+    answer: "MITOS",
+    explanation: "Tidak semua korban mampu melakukan perlawanan fisik. Respons korban dapat berupa takut, diam, bingung, membeku, atau mengikuti situasi karena merasa tidak aman. Tidak adanya perlawanan bukan berarti ada persetujuan.",
+    keyMessage: "Diam, takut, atau membeku bukan berarti setuju.",
+  },
+  {
+    id: 4,
+    category: "Hak Korban & Akses Layanan",
+    statement: "Korban berhak mengetahui perkembangan laporannya.",
+    answer: "FAKTA",
+    explanation: "Korban atau pendamping berhak memperoleh informasi jelas mengenai status laporan — apakah sudah diterima, sedang diverifikasi, membutuhkan kelengkapan, atau ditindaklanjuti. Fitur tracking dalam sistem digital membantu mengurangi ketidakpastian proses.",
+    keyMessage: "Tracking laporan membantu korban mengetahui proses tindak lanjut secara lebih jelas.",
+  },
+  {
+    id: 5,
+    category: "Hak Korban & Akses Layanan",
+    statement: "Pelaporan selalu berarti harus langsung masuk jalur hukum.",
+    answer: "MITOS",
+    explanation: "Pelaporan tidak selalu identik dengan proses hukum langsung. Pada tahap awal, korban dapat membutuhkan informasi, pendampingan psikologis, layanan kesehatan, atau konsultasi. Jalur hukum dapat menjadi salah satu pilihan tindak lanjut.",
+    keyMessage: "Pelaporan dapat menjadi pintu awal untuk memperoleh bantuan, bukan selalu langsung proses hukum.",
+  },
+  {
+    id: 6,
+    category: "Peran Pendamping & Komunitas",
+    statement: "Pendamping komunitas dapat membantu korban memahami alur pelaporan.",
+    answer: "FAKTA",
+    explanation: "Pendamping komunitas dapat membantu korban memahami pilihan layanan, mengisi formulir, menyusun kronologi awal, dan menghubungkan korban dengan layanan yang tepat. Peran pendamping adalah mendukung dan memberi informasi, bukan mengambil alih keputusan korban.",
+    keyMessage: "Pendamping membantu akses layanan yang aman, tepat, dan tidak menghakimi.",
+  },
+  {
+    id: 7,
+    category: "Bentuk Kekerasan Seksual",
+    statement: "Kekerasan seksual hanya terjadi jika ada kontak fisik.",
+    answer: "MITOS",
+    explanation: "Kekerasan seksual tidak selalu berbentuk kontak fisik. Tindakan verbal, nonverbal, digital, ancaman seksual, penyebaran konten intim tanpa persetujuan, atau pelecehan melalui pesan dan media sosial juga termasuk bentuk kekerasan seksual.",
+    keyMessage: "Kekerasan seksual dapat terjadi secara fisik, verbal, psikologis, maupun digital.",
+  },
+  {
+    id: 8,
+    category: "Kerahasiaan & Keamanan Data",
+    statement: "Data pribadi korban tidak boleh disebarkan tanpa persetujuan.",
+    answer: "FAKTA",
+    explanation: "Data pribadi korban — nama, alamat, kontak, foto, kronologi — harus dilindungi. Penyebaran data tanpa persetujuan dapat menimbulkan stigma, ancaman, tekanan sosial, atau dampak psikologis tambahan bagi korban.",
+    keyMessage: "Identitas korban harus dilindungi agar korban tetap aman dan bermartabat.",
+  },
+  {
+    id: 9,
+    category: "Stigma & Victim Blaming",
+    statement: "Korban yang baru berani bercerita setelah lama kejadian berarti tidak jujur.",
+    answer: "MITOS",
+    explanation: "Korban dapat membutuhkan waktu lama untuk merasa aman bercerita. Rasa takut, malu, ancaman pelaku, relasi kuasa, dan kekhawatiran tidak dipercaya dapat membuat korban menunda pelaporan. Waktu pelaporan yang terlambat tidak otomatis menunjukkan ketidakjujuran.",
+    keyMessage: "Setiap korban memiliki waktu dan kesiapan berbeda untuk bercerita atau melapor.",
+  },
+  {
+    id: 10,
+    category: "Sistem Digital & Fitur Tracking",
+    statement: "Sistem digital dapat membantu pelaporan menjadi lebih mudah diakses.",
+    answer: "FAKTA",
+    explanation: "Sistem digital dapat memudahkan pengguna mengakses informasi, mengirim laporan awal, melihat status tindak lanjut, dan memperoleh rujukan layanan tanpa harus selalu datang langsung. Agar efektif, sistem harus sederhana, responsif, aman, dan ramah pengguna.",
+    keyMessage: "Media digital dapat memperluas akses pelaporan jika dirancang aman dan mudah digunakan.",
+  },
+  {
+    id: 11,
+    category: "Stigma & Victim Blaming",
+    statement: "Menyalahkan korban dapat membuat korban semakin takut melapor.",
+    answer: "FAKTA",
+    explanation: "Victim blaming dapat membuat korban merasa bersalah, malu, takut, dan tidak aman untuk mencari bantuan. Respons yang tepat adalah mendengarkan, mempercayai, menjaga kerahasiaan, dan mengarahkan korban ke layanan yang aman.",
+    keyMessage: "Dukungan yang tidak menghakimi membantu korban lebih berani mengakses bantuan.",
+  },
+  {
+    id: 12,
+    category: "Peran Pendamping & Komunitas",
+    statement: "Kalau pelaku adalah orang yang dikenal, maka kejadian itu bukan kekerasan seksual.",
+    answer: "MITOS",
+    explanation: "Kekerasan seksual dapat dilakukan oleh siapa saja, termasuk orang yang dikenal korban seperti teman, pasangan, rekan kerja, atau keluarga. Kedekatan hubungan tidak menghapus kemungkinan adanya paksaan, ancaman, manipulasi, atau penyalahgunaan relasi kuasa.",
+    keyMessage: "Pelaku bisa orang dikenal maupun tidak dikenal; relasi tidak menghapus unsur kekerasan.",
+  },
+  {
+    id: 13,
+    category: "Hak Korban & Akses Layanan",
+    statement: "Korban berhak mendapatkan informasi tentang layanan bantuan.",
+    answer: "FAKTA",
+    explanation: "Korban berhak memperoleh informasi mengenai layanan yang tersedia, seperti pendampingan psikologis, konsultasi hukum, layanan kesehatan, dan rujukan komunitas. Informasi yang jelas membantu korban membuat keputusan sesuai kebutuhan dan tingkat keamanannya.",
+    keyMessage: "Informasi layanan membantu korban memahami pilihan bantuan yang tersedia.",
+  },
+  {
+    id: 14,
+    category: "Kerahasiaan & Keamanan Data",
+    statement: "Laporan digital boleh diakses bebas oleh siapa saja agar transparan.",
+    answer: "MITOS",
+    explanation: "Transparansi tidak berarti semua orang boleh melihat isi laporan. Dalam konteks pelaporan kekerasan seksual, transparansi yang benar adalah kejelasan proses bagi pihak yang berhak. Identitas korban dan dokumen pendukung tetap harus dibatasi aksesnya.",
+    keyMessage: "Transparansi proses harus berjalan bersama perlindungan data korban.",
+  },
+  {
+    id: 15,
+    category: "Sistem Digital & Fitur Tracking",
+    statement: "Sistem pelaporan perlu dibuat mudah digunakan oleh pengguna.",
+    answer: "FAKTA",
+    explanation: "Sistem yang rumit dapat membuat pengguna enggan melapor. Antarmuka yang jelas, bahasa sederhana, alur yang pendek, dan tombol bantuan yang mudah dipahami dapat meningkatkan kenyamanan pengguna, terutama bagi korban yang berada dalam kondisi cemas.",
+    keyMessage: "Sistem yang ramah pengguna membantu proses pelaporan menjadi lebih aman dan efisien.",
+  },
+  {
+    id: 16,
+    category: "Stigma & Victim Blaming",
+    statement: "Kalau korban bingung saat bercerita, berarti laporannya tidak dapat dipercaya.",
+    answer: "MITOS",
+    explanation: "Korban yang mengalami tekanan psikologis dapat bercerita secara tidak runtut, lupa sebagian detail, atau berubah-ubah dalam menyampaikan kronologi. Kondisi tersebut tidak boleh langsung dianggap sebagai kebohongan.",
+    keyMessage: "Cerita yang belum runtut tidak otomatis berarti korban berbohong.",
+  },
+  {
+    id: 17,
+    category: "Sistem Digital & Fitur Tracking",
+    statement: "Fitur pelacakan laporan dapat meningkatkan kejelasan proses penanganan.",
+    answer: "FAKTA",
+    explanation: "Fitur tracking membuat status laporan lebih mudah dipantau. Korban atau pendamping dapat mengetahui apakah laporan telah masuk, sedang ditinjau, atau sudah diarahkan ke layanan tertentu. Fitur ini meningkatkan rasa kontrol dan mengurangi ketidakpastian.",
+    keyMessage: "Tracking membantu proses penanganan menjadi lebih jelas dan terpantau.",
+  },
+  {
+    id: 18,
+    category: "Hak Korban & Akses Layanan",
+    statement: "Pelaporan kekerasan seksual harus dilakukan dengan cara yang aman dan tidak menghakimi.",
+    answer: "FAKTA",
+    explanation: "Pelaporan yang baik harus memperhatikan keamanan korban, kerahasiaan data, bahasa yang tidak menyudutkan, dan akses terhadap pendampingan. Cara menerima laporan sangat memengaruhi keberanian korban untuk melanjutkan proses.",
+    keyMessage: "Pelaporan harus berpihak pada korban, aman, rahasia, dan tidak menghakimi.",
+  },
+  {
+    id: 19,
+    category: "Kerahasiaan & Keamanan Data",
+    statement: "Semua orang di komunitas boleh mengetahui identitas korban agar kasus cepat selesai.",
+    answer: "MITOS",
+    explanation: "Menyebarkan identitas korban tidak menjamin kasus selesai lebih cepat dan justru dapat membahayakan korban. Korban berisiko mengalami stigma, tekanan sosial, ancaman, atau kekerasan lanjutan. Komunitas dapat membantu dengan membangun lingkungan suportif dan menghormati kerahasiaan korban.",
+    keyMessage: "Kecepatan penanganan tidak boleh mengorbankan keselamatan dan privasi korban.",
+  },
+  {
+    id: 20,
+    category: "Stigma & Victim Blaming",
+    statement: "Edukasi mitos dan fakta dapat membantu mengurangi stigma terhadap korban.",
+    answer: "FAKTA",
+    explanation: "Edukasi mitos dan fakta membantu peserta mengenali informasi yang keliru, memahami hak korban, dan mengetahui prinsip pelaporan yang aman. Format kuis interaktif membuat peserta lebih aktif berpikir dan berdiskusi, sehingga komunitas dapat mengurangi sikap menyalahkan korban.",
+    keyMessage: "Edukasi interaktif membantu membangun komunitas yang lebih paham, aman, dan suportif.",
+  },
+];
