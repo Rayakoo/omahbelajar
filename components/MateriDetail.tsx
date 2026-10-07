@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2, Lock, Home } from "lucide-react";
+import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, File as FileIcon, Gamepad2, Lock, Home } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
@@ -32,6 +32,14 @@ function getUnlockedCount(items: { urutan: number }[], progressUrutan: number): 
     if (items[i].urutan <= progressUrutan) lastIdx = i;
   }
   return Math.max(2, Math.min(items.length, lastIdx + 2));
+}
+
+// Strip HTML tags to check whether materi text is actually empty
+// (e.g. "<p><br></p>" or whitespace should count as empty)
+function hasTextContent(content: string | null | undefined): boolean {
+  if (!content) return false;
+  const text = content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  return text.length > 0;
 }
 
 export default function MateriDetail() {
@@ -125,6 +133,19 @@ export default function MateriDetail() {
   }, [loading, authLoading, user, profileIncomplete]);
 
   const activeSection = sections[activeIdx];
+  // Jika materi tidak ada isi teks tapi ada file -> langsung tampilkan file viewer,
+  // user tidak perlu menekan tombol tab terlebih dulu.
+  useEffect(() => {
+    const sec = sections[activeIdx];
+    if (sec?.type === "materi") {
+      if (!hasTextContent(sec.data.content) && sec.data.file_url) {
+        setMateriTab("file");
+        setFileLoading(true);
+      } else {
+        setMateriTab("materi");
+      }
+    }
+  }, [activeIdx, sections]);
   const courseTitle = course?.title || "";
   const unlockedCount = user ? getUnlockedCount(sections.map((s) => s.data), progressUrutan) : sections.length;
   const mgUnlockedCount = user ? getUnlockedCount(mgList, progressUrutan) : mgList.length;
@@ -178,7 +199,7 @@ export default function MateriDetail() {
     if (idx >= unlockedCount) return;
     if (sec.type === "materi") {
       if (sec.data.file_url) setFileLoading(true);
-      if (!sec.data.content && sec.data.file_url) {
+      if (!hasTextContent(sec.data.content) && sec.data.file_url) {
         setMateriTab("file");
       } else {
         setMateriTab("materi");
@@ -284,26 +305,32 @@ export default function MateriDetail() {
                 );
               })()
             ) : activeSection.type === "materi" ? (
+              (() => {
+                const hasContent = hasTextContent(activeSection.data.content);
+                const hasFile = !!activeSection.data.file_url;
+                // Kalau tidak ada isi teks tapi ada file -> langsung mode file,
+                // tab disembunyikan supaya user tidak perlu menekan tombol.
+                const showTabs = hasContent && hasFile;
+                const effectiveTab = !hasContent && hasFile ? "file" : materiTab;
+                return (
               <div className="w-full bg-white rounded-[28px] border-2 border-[#3B387E] flex flex-col leading-relaxed">
                 <div className="p-6 md:p-10 pb-0">
                   <h2 className="text-xl md:text-2xl font-extrabold font-poppins text-[#3B387E] mb-4">{activeSection.data.title}</h2>
-                  {activeSection.data.file_url && (
+                  {showTabs && (
                     <div className="bg-[#FED777] border-2 border-[#3B387E] p-1 rounded-2xl flex items-center w-full mb-6">
-                      {activeSection.data.content && (
-                        <button
-                          onClick={() => setMateriTab("materi")}
-                          className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                            materiTab === "materi" ? "bg-[#3B387E] text-white shadow-sm" : "text-[#3B387E]/60 hover:text-[#3B387E]"
-                          }`}
-                        >
-                          <FileText className="w-4 h-4" />
-                          {locale === "id" ? "Materi" : "Text"}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setMateriTab("materi")}
+                        className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                          effectiveTab === "materi" ? "bg-[#3B387E] text-white shadow-sm" : "text-[#3B387E]/60 hover:text-[#3B387E]"
+                        }`}
+                      >
+                        <FileText className="w-4 h-4" />
+                        {locale === "id" ? "Materi" : "Text"}
+                      </button>
                       <button
                         onClick={() => { setMateriTab("file"); setFileLoading(true); }}
                         className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                          materiTab === "file" ? "bg-[#3B387E] text-white shadow-sm" : "text-[#3B387E]/60 hover:text-[#3B387E]"
+                          effectiveTab === "file" ? "bg-[#3B387E] text-white shadow-sm" : "text-[#3B387E]/60 hover:text-[#3B387E]"
                         }`}
                       >
                         <FileIcon className="w-4 h-4" />
@@ -313,36 +340,42 @@ export default function MateriDetail() {
                   )}
                 </div>
                 <div className="px-6 md:px-10 pb-6 md:pb-10 overflow-y-auto max-h-[60vh]">
-                  {materiTab === "materi" && activeSection.data.content && (
+                  {effectiveTab === "materi" && hasContent && (
                     <div
                       className="text-sm md:text-base text-[#3B387E]/80 font-normal leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
                       dangerouslySetInnerHTML={{ __html: activeSection.data.content }}
                     />
                   )}
-                  {materiTab === "materi" && !activeSection.data.content && activeSection.data.file_url && (
-                    <div className="text-sm text-gray-500 italic">{locale === "id" ? "Tidak ada teks materi." : "No text content."}</div>
-                  )}
-                  {materiTab === "file" && activeSection.data.file_url && (
+                  {effectiveTab === "file" && hasFile && (
                     (() => {
-                      const rawUrl = activeSection.data.file_url;
+                      const rawUrl = activeSection.data.file_url as string;
                       const proxied = getProxiedUrl(rawUrl);
                       const url = proxied || rawUrl;
 
                       const googleDriveId = rawUrl.match(/\/file\/d\/([^/?#]+)/)?.[1];
                       const isPdf = rawUrl?.match(/\.pdf(\?|$)/i) || url?.match(/\.pdf(\?|$)/i);
+                      const isImage = rawUrl?.match(/\.(png|jpe?g|gif|webp|svg)(\?|$)/i) || url?.match(/\.(png|jpe?g|gif|webp|svg)(\?|$)/i);
+                      const isOffice = rawUrl?.match(/\.(docx?|xlsx?|pptx?)(\?|$)/i);
+                      const isAbsolute = /^https?:\/\//i.test(url);
+                      const rawIsAbsolute = /^https?:\/\//i.test(rawUrl);
 
+                      const spinner = fileLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
+                          <div className="w-8 h-8 border-4 border-[#3B387E] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      );
+
+                      // View-only: tidak ada tombol download / link unduh di sisi UI.
+                      // Klik kanan juga dinonaktifkan pada area pratinjau.
                       if (googleDriveId) {
                         return (
-                          <div className="relative">
-                            {fileLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
-                                <div className="w-8 h-8 border-4 border-[#3B387E] border-t-transparent rounded-full animate-spin" />
-                              </div>
-                            )}
+                          <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
+                            {spinner}
                             <iframe
-                              src={`https://drive.google.com/file/d/${googleDriveId}/preview`}
+                              src={`https://drive.google.com/file/d/${googleDriveId}/preview?rm=minimal`}
                               className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
                               title="File Preview"
+                              allow="fullscreen"
                               onLoad={() => setFileLoading(false)}
                             />
                           </div>
@@ -351,14 +384,10 @@ export default function MateriDetail() {
 
                       if (isPdf) {
                         return (
-                          <div className="relative">
-                            {fileLoading && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
-                                <div className="w-8 h-8 border-4 border-[#3B387E] border-t-transparent rounded-full animate-spin" />
-                              </div>
-                            )}
+                          <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
+                            {spinner}
                             <iframe
-                              src={url}
+                              src={`${url}#toolbar=0&navpanes=0`}
                               className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
                               title="File Preview"
                               onLoad={() => setFileLoading(false)}
@@ -367,21 +396,65 @@ export default function MateriDetail() {
                         );
                       }
 
+                      if (isImage) {
+                        return (
+                          <div
+                            className="relative select-none flex items-center justify-center bg-[#FFF6EA] rounded-2xl border-2 border-[#3B387E] p-4"
+                            onContextMenu={(e) => e.preventDefault()}
+                            onDragStart={(e) => e.preventDefault()}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={activeSection.data.title}
+                              className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl pointer-events-none"
+                              draggable={false}
+                              onLoad={() => setFileLoading(false)}
+                              onContextMenu={(e) => e.preventDefault()}
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (isOffice && rawIsAbsolute) {
+                        return (
+                          <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
+                            {spinner}
+                            <iframe
+                              src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`}
+                              className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
+                              title="File Preview"
+                              onLoad={() => setFileLoading(false)}
+                            />
+                          </div>
+                        );
+                      }
+
+                      // Fallback view-only: iframe tanpa tombol/link download.
+                      // Untuk URL publik, pakai Google Docs viewer agar bisa preview.
+                      const fallbackSrc =
+                        rawIsAbsolute && !isAbsolute
+                          ? rawUrl
+                          : rawIsAbsolute
+                            ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(rawUrl)}`
+                            : url;
                       return (
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-5 py-3 bg-[#3B387E] text-white text-sm font-bold rounded-full hover:bg-[#2e2a66] transition-all shadow-sm"
-                        >
-                          <Download className="w-4 h-4" />
-                          {locale === "id" ? "Download File" : "Download File"}
-                        </a>
+                        <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
+                          {spinner}
+                          <iframe
+                            src={isAbsolute && !isPdf ? fallbackSrc : url}
+                            className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
+                            title="File Preview"
+                            onLoad={() => setFileLoading(false)}
+                          />
+                        </div>
                       );
                     })()
                   )}
                 </div>
               </div>
+                );
+              })()
             ) : null}
           </div>
 
