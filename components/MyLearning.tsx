@@ -46,7 +46,9 @@ export default function MyLearning() {
     if (!user) return;
     getUserCourses(user.id)
       .then((ucs) => {
-        const list = ucs as unknown as (UserCourse & { course: CourseWithRelations })[];
+        const list = (ucs as unknown as (UserCourse & { course: CourseWithRelations })[])
+          // Unsolved case tidak lagi tampil di sini — pindah ke /minigames/unsolved-case
+          .filter((uc) => uc.course?.course_type !== "unsolved_case");
         setUserCourseList(list);
         setUserStats({
           total: list.length,

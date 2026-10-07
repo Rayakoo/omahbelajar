@@ -23,11 +23,13 @@ export async function GET(request: NextRequest) {
       return new NextResponse("Failed to fetch video", { status: res.status });
     }
 
+    if (!res.body) {
+      return new NextResponse("Empty video response", { status: 502 });
+    }
+
     const contentType = res.headers.get("content-type") || "video/mp4";
     const contentLength = res.headers.get("content-length");
     const contentRange = res.headers.get("content-range");
-
-    const buffer = await res.arrayBuffer();
 
     const responseHeaders: Record<string, string> = {
       "Content-Type": contentType,
@@ -35,19 +37,19 @@ export async function GET(request: NextRequest) {
       "Accept-Ranges": "bytes",
     };
 
+    if (contentLength) {
+      responseHeaders["Content-Length"] = contentLength;
+    }
+
     if (rangeHeader && res.status === 206 && contentRange) {
       responseHeaders["Content-Range"] = contentRange;
-      return new NextResponse(buffer, {
+      return new NextResponse(res.body, {
         status: 206,
         headers: responseHeaders,
       });
     }
 
-    if (contentLength) {
-      responseHeaders["Content-Length"] = contentLength;
-    }
-
-    return new NextResponse(buffer, {
+    return new NextResponse(res.body, {
       headers: responseHeaders,
     });
   } catch {

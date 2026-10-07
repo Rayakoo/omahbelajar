@@ -23,7 +23,7 @@ interface UserStats {
   inProgress: number;
 }
 
-export default function CoursePage({ initialCategory, pageBg }: { initialCategory?: string; pageBg?: string }) {
+export default function CoursePage({ initialCategory, pageBg, sectionBg }: { initialCategory?: string; pageBg?: string; sectionBg?: string }) {
   const router = useRouter();
   const { user, profileComplete, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
@@ -71,7 +71,8 @@ export default function CoursePage({ initialCategory, pageBg }: { initialCategor
   }, [levels]);
 
   const filteredCourses = useMemo(() => {
-    let result = courses;
+    // Unsolved case tidak lagi tampil di sini — pindah ke /minigames/unsolved-case
+    let result = courses.filter((c) => c.course_type !== "unsolved_case");
     if (initialCategory) {
       result = result.filter((c) => c.category?.name === initialCategory);
     }
@@ -119,7 +120,7 @@ export default function CoursePage({ initialCategory, pageBg }: { initialCategor
 
   return (
     <div className={`min-h-screen ${pageBg ?? "bg-page-50"} text-brand-900 font-sans`}>
-      <section className="bg-[#FED777] p-6 md:p-10 pb-16 md:pb-20 font-sans">
+      <section className={`${sectionBg ?? "bg-[#FED777]"} p-6 md:p-10 pb-16 md:pb-20 font-sans`}>
         <div className="max-w-6xl mx-auto space-y-8">
 
           {/* Top bar: filter tabs & search */}

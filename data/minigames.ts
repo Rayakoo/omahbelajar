@@ -40,4 +40,14 @@ export const MINIGAMES: Minigame[] = [
     color: "#6BBF8A",
     slug: "/minigames/puzzle",
   },
+  {
+    id: "unsolved-case",
+    title: "Unsolved Case",
+    description: "Jadilah detektif dan pecahkan kasus misterius seputar kesehatan reproduksi dari course-course yang tersedia.",
+    titleEn: "Unsolved Case",
+    descriptionEn: "Become a detective and solve mysterious cases about reproductive health from the available courses.",
+    icon: "🔍",
+    color: "#B9A6FF",
+    slug: "/minigames/unsolved-case",
+  },
 ];

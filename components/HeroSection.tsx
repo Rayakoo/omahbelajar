@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function HeroSection() {
   return (
     <section
-      className="relative -mb-24 md:-mb-14 font-poppins bg-cover bg-center bg-no-repeat"
+      className="relative mb-8 md:mb-12 font-poppins bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url(/background_hero.png)" }}
     >
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center px-6 md:px-12 lg:px-16 pt-12 md:pt-16 pb-36 md:pb-28">

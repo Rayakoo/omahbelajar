@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2, Lock } from "lucide-react";
+import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2, Lock, Home } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
@@ -232,6 +232,13 @@ export default function MateriDetail() {
               {String(Math.floor(courseElapsed / 3600)).padStart(2, "0")}:{String(Math.floor((courseElapsed % 3600) / 60)).padStart(2, "0")}:{String(courseElapsed % 60).padStart(2, "0")}
             </span>
           )}
+          <Link
+            href="/"
+            className="flex items-center gap-1 bg-white text-[#3B387E] border-2 border-[#3B387E] px-5 py-2 rounded-full text-sm font-bold hover:bg-[#DCD5FE]/40 transition-all active:scale-95 shadow-sm"
+          >
+            <Home className="w-4 h-4" />
+            {locale === "id" ? "beranda" : "home"}
+          </Link>
           <button
             onClick={() => router.push(`/omah-belajar/${courseId}`)}
             className="flex items-center gap-1 bg-[#3B387E] text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-[#2e2a66] transition-all active:scale-95 shadow-sm"
