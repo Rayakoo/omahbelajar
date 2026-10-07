@@ -30,9 +30,17 @@ const lilitaOne = Lilita_One({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://omahbelajar.org"),
-  title: "Omah Belajar",
-  description: "Platform belajar interaktif dengan kursus, kuis, dan minigames edukatif.",
+  metadataBase: new URL("https://omahnalar.org"),
+  title: {
+    default: "Omah Belajar — Bagian dari Omah Nalar",
+    template: "%s — Omah Belajar",
+  },
+  description:
+    "Omah Belajar adalah platform edukasi bagian dari Omah Nalar — ruang belajar interaktif tentang kesehatan reproduksi dan pencegahan kekerasan seksual melalui course, kuis, dan minigames edukatif.",
+  keywords: ["Omah Belajar", "Omah Nalar", "edukasi", "kesehatan reproduksi", "course", "minigames", "kuis edukatif"],
+  authors: [{ name: "Omah Nalar" }],
+  creator: "Omah Nalar",
+  publisher: "Omah Nalar",
   icons: {
     icon: "/images/logo_omah.png",
     apple: "/images/logo_omah.png",
@@ -41,18 +49,28 @@ export const metadata: Metadata = {
     "apple-mobile-web-app-capable": "yes",
   },
   openGraph: {
-    title: "Omah Belajar",
-    description: "Platform belajar interaktif dengan kursus, kuis, dan minigames edukatif.",
+    title: "Omah Belajar — Bagian dari Omah Nalar",
+    description:
+      "Omah Belajar adalah platform edukasi bagian dari Omah Nalar — ruang belajar interaktif tentang kesehatan reproduksi dan pencegahan kekerasan seksual melalui course, kuis, dan minigames edukatif.",
+    url: "https://omahnalar.org",
     siteName: "Omah Belajar",
+    locale: "id_ID",
     images: [
       {
         url: "/images/logo_omah.png",
-        width: 512,
-        height: 512,
-        alt: "Omah Belajar",
+        width: 667,
+        height: 374,
+        alt: "Logo Omah Nalar — Omah Belajar",
       },
     ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Omah Belajar — Bagian dari Omah Nalar",
+    description:
+      "Platform edukasi bagian dari Omah Nalar: belajar kesehatan reproduksi lewat course, kuis, dan minigames interaktif.",
+    images: ["/images/logo_omah.png"],
   },
 };
 
@@ -63,7 +81,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id"
       className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${lilitaOne.variable} h-full antialiased`}
     >
       <body className="min-h-screen bg-page-50 font-sans text-brand-900 flex flex-col">
