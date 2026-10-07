@@ -6,9 +6,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
 const CARD_STYLE: Record<string, { bg: string; image: string; alt: string }> = {
-  "tts": { bg: "bg-[#FDE067]", image: "/tts.png", alt: "TTS Illustration" },
-  "puzzle": { bg: "bg-[#A4C4FF]", image: "/edukasi.png", alt: "Puzzle Illustration" },
-  "mitos-atau-fakta": { bg: "bg-[#8DF2BA]", image: "/mitos.png", alt: "Mitos atau Fakta Illustration" },
+  "tts": { bg: "bg-[#FDE067]", image: "/TTS.png", alt: "TTS Illustration" },
+  "puzzle": { bg: "bg-[#A4C4FF]", image: "/EDUKASI.png", alt: "Puzzle Illustration" },
+  "mitos-atau-fakta": { bg: "bg-[#8DF2BA]", image: "/MITOS.png", alt: "Mitos atau Fakta Illustration" },
 };
 
 const CARD_ORDER = ["tts", "puzzle", "mitos-atau-fakta"];
