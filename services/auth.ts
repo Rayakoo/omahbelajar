@@ -15,6 +15,8 @@ export type Profile = {
   role: string;
   usia: number | null;
   jenis_kelamin: string | null;
+  pendidikan: string | null;
+  pekerjaan: string | null;
   tempat_tinggal: string | null;
   created_at: string;
   updated_at: string;
@@ -327,10 +329,17 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return (data?.[0] as Profile) || null;
 }
 
-// ── Update Own Profile (nama, usia, jenis kelamin, tempat tinggal) ──
+// ── Update Own Profile (nama, usia, jenis kelamin, pendidikan, pekerjaan, tempat tinggal) ──
 export async function updateProfileData(
   userId: string,
-  input: { full_name?: string; usia?: number | null; jenis_kelamin?: string | null; tempat_tinggal?: string | null }
+  input: {
+    full_name?: string;
+    usia?: number | null;
+    jenis_kelamin?: string | null;
+    pendidikan?: string | null;
+    pekerjaan?: string | null;
+    tempat_tinggal?: string | null;
+  }
 ): Promise<Profile> {
   const token = await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
@@ -342,25 +351,32 @@ export async function updateProfileData(
   };
 
   // Coba update baris profil yang sudah ada
-  let res = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}&select=*`, {
+  const res = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}&select=*`, {
     method: "PATCH",
     headers,
     body: JSON.stringify({ ...input, updated_at: new Date().toISOString() }),
   });
-  let data: Profile[] = res.ok ? await res.json() : [];
+
+  // Gagal update (mis. kolom belum ada / RLS) → tampilkan pesan asli dari Supabase
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.message || `Update profile failed (${res.status})`);
+  }
+
+  let data: Profile[] = await res.json();
 
   // Baris profil belum ada → insert baru
-  if (!res.ok || !data || data.length === 0) {
-    res = await fetch(`${url}/rest/v1/profiles?select=*`, {
+  if (!data || data.length === 0) {
+    const insertRes = await fetch(`${url}/rest/v1/profiles?select=*`, {
       method: "POST",
       headers,
       body: JSON.stringify({ id: userId, role: "user", ...input, updated_at: new Date().toISOString() }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Update profile failed");
+    if (!insertRes.ok) {
+      const err = await insertRes.json().catch(() => null);
+      throw new Error(err?.message || "Update profile failed");
     }
-    data = await res.json();
+    data = await insertRes.json();
   }
 
   if (!data || data.length === 0) throw new Error("No data returned");

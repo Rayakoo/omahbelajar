@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, profileComplete: !!profile && !!(profile.full_name?.trim() && profile.usia != null && profile.jenis_kelamin?.trim() && profile.tempat_tinggal?.trim()), loading, signOut, refreshUser: fetchUser, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, profileComplete: !!profile && !!(profile.full_name?.trim() && profile.usia != null && profile.jenis_kelamin?.trim() && profile.pendidikan?.trim() && profile.pekerjaan?.trim() && profile.tempat_tinggal?.trim()), loading, signOut, refreshUser: fetchUser, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

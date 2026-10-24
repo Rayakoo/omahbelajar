@@ -6,6 +6,12 @@ export function getProxiedUrl(url: string | null | undefined): string | undefine
     if (url.match(/\.(mp4|webm)(\?|$)/i)) {
       return `/api/video-proxy?url=${encodeURIComponent(url)}`;
     }
+    // Dokumen (PDF/txt) lewat file-proxy streaming + Range agar bisa
+    // progressive-render; tetap view-only (inline) dan URL asal disembunyikan.
+    // Jangan lewat image-proxy (buffer penuh + salah content-type).
+    if (url.match(/\.(pdf|txt)(\?|$)/i)) {
+      return `/api/file-proxy?url=${encodeURIComponent(url)}`;
+    }
     return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   }
   return url;

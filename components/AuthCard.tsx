@@ -59,8 +59,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
           return;
         }
         await refreshUser();
-        const isAdmin = result.user?.user_metadata?.role === "admin";
-        router.replace(isAdmin ? "/admin" : "/");
+        router.replace("/");
       } else {
         const result = await signUp(email, password, name);
         setEmail("");
@@ -69,8 +68,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
         setConfirmPassword("");
         if (result.user) {
           await refreshUser();
-          const isAdmin = result.user?.user_metadata?.role === "admin";
-          router.replace(isAdmin ? "/admin" : "/");
+          router.replace("/");
         } else {
           router.push("/login?registered=true");
         }

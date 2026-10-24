@@ -389,3 +389,17 @@ export async function getQuizIdsByCourse(courseId: string) {
   if (error) throw error;
   return (data || []).map((q: { id: string }) => q.id);
 }
+
+// ── Get IDs of quizzes the user has passed (single batched query) ──
+// Pengganti loop N x getUserQuizResults di halaman materi agar loading awal tidak waterfall.
+export async function getPassedQuizIds(userId: string, quizIds: string[]) {
+  if (quizIds.length === 0) return [] as string[];
+  const token = await getValidToken().catch(() => getAccessToken());
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_quiz_results?select=quiz_id&user_id=eq.${encodeURIComponent(userId)}&quiz_id=in.(${quizIds.map((id) => `"${id}"`).join(",")})&passed=eq.true`,
+    { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) return [] as string[];
+  const rows: { quiz_id: string }[] = await res.json();
+  return [...new Set(rows.map((r) => r.quiz_id))];
+}

@@ -8,6 +8,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import { updateProfileData } from "@/services/auth";
 
+const PEKERJAAN_LAINNYA = "Lainnya";
+const PEKERJAAN_VALUES = ["Mahasiswa", "Ibu Rumah Tangga", "Guru dan Dosen"];
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, loading, refreshProfile, refreshUser } = useAuth();
@@ -18,20 +21,49 @@ export default function ProfilePage() {
   const [nama, setNama] = useState("");
   const [usia, setUsia] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState("");
+  const [pendidikan, setPendidikan] = useState("");
+  const [pekerjaan, setPekerjaan] = useState("");
+  const [pekerjaanLainnya, setPekerjaanLainnya] = useState("");
   const [tempatTinggal, setTempatTinggal] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (profile) {
       setNama(profile.full_name || "");
       setUsia(profile.usia != null ? String(profile.usia) : "");
       setJenisKelamin(profile.jenis_kelamin || "");
+      setPendidikan(profile.pendidikan || "");
+
+      const pekerjaanTersimpan = profile.pekerjaan || "";
+      if (pekerjaanTersimpan && !PEKERJAAN_VALUES.includes(pekerjaanTersimpan)) {
+        setPekerjaan(PEKERJAAN_LAINNYA);
+        setPekerjaanLainnya(pekerjaanTersimpan);
+      } else {
+        setPekerjaan(pekerjaanTersimpan);
+        setPekerjaanLainnya("");
+      }
+
       setTempatTinggal(profile.tempat_tinggal || "");
     } else if (user) {
       setNama(user.user_metadata?.full_name || "");
     }
   }, [profile, user]);
+
+  const pendidikanOptions = [
+    { value: "SD", label: t.sd },
+    { value: "SMP", label: t.smp },
+    { value: "SMA", label: t.sma },
+    { value: "Sarjana dan Sederajat", label: t.sarjana },
+  ];
+
+  const pekerjaanOptions = [
+    { value: "Mahasiswa", label: t.mahasiswa },
+    { value: "Ibu Rumah Tangga", label: t.ibuRumahTangga },
+    { value: "Guru dan Dosen", label: t.guruDosen },
+    { value: PEKERJAAN_LAINNYA, label: t.lainnya },
+  ];
 
   if (loading) {
     return (
@@ -62,18 +94,24 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
-    if (!nama.trim()) { alert(t.isiNama); return; }
-    if (!usia || Number(usia) <= 0) { alert(t.isiUsia); return; }
-    if (!jenisKelamin) { alert(t.isiJenisKelamin); return; }
-    if (!tempatTinggal.trim()) { alert(t.isiTempatTinggal); return; }
+    setError("");
+    setSuccess(false);
+    if (!nama.trim()) { setError(t.isiNama); return; }
+    if (!usia || Number(usia) <= 0) { setError(t.isiUsia); return; }
+    if (!jenisKelamin) { setError(t.isiJenisKelamin); return; }
+    if (!pendidikan) { setError(t.isiPendidikan); return; }
+    if (!pekerjaan) { setError(t.isiPekerjaan); return; }
+    if (pekerjaan === PEKERJAAN_LAINNYA && !pekerjaanLainnya.trim()) { setError(t.isiPekerjaanLainnya); return; }
+    if (!tempatTinggal.trim()) { setError(t.isiTempatTinggal); return; }
 
     setSaving(true);
-    setSuccess(false);
     try {
       await updateProfileData(user.id, {
         full_name: nama.trim(),
         usia: Number(usia),
         jenis_kelamin: jenisKelamin,
+        pendidikan,
+        pekerjaan: pekerjaan === PEKERJAAN_LAINNYA ? pekerjaanLainnya.trim() : pekerjaan,
         tempat_tinggal: tempatTinggal.trim(),
       });
       await refreshProfile();
@@ -81,7 +119,7 @@ export default function ProfilePage() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2500);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Gagal menyimpan profil");
+      setError(err instanceof Error ? err.message : t.gagalSimpan);
     } finally {
       setSaving(false);
     }
@@ -92,6 +130,8 @@ export default function ProfilePage() {
     profile.full_name?.trim() &&
     profile.usia != null &&
     profile.jenis_kelamin?.trim() &&
+    profile.pendidikan?.trim() &&
+    profile.pekerjaan?.trim() &&
     profile.tempat_tinggal?.trim();
 
   return (
@@ -130,8 +170,9 @@ export default function ProfilePage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-xs text-brand-900/50">{t.wajibDiisi}</p>
             <div>
-              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.namaLengkap}</label>
+              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.namaLengkap} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={nama}
@@ -143,7 +184,7 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.usia}</label>
+                <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.usia} <span className="text-red-500">*</span></label>
                 <input
                   type="number"
                   min="1"
@@ -155,7 +196,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.jenisKelamin}</label>
+                <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.jenisKelamin} <span className="text-red-500">*</span></label>
                 <select
                   value={jenisKelamin}
                   onChange={(e) => setJenisKelamin(e.target.value)}
@@ -169,7 +210,44 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.tempatTinggal}</label>
+              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.pendidikan} <span className="text-red-500">*</span></label>
+              <select
+                value={pendidikan}
+                onChange={(e) => setPendidikan(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-700/20 shadow-sm"
+              >
+                <option value="">{t.pilihPendidikan}</option>
+                {pendidikanOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.pekerjaan} <span className="text-red-500">*</span></label>
+              <select
+                value={pekerjaan}
+                onChange={(e) => setPekerjaan(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-700/20 shadow-sm"
+              >
+                <option value="">{t.pilihPekerjaan}</option>
+                {pekerjaanOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {pekerjaan === PEKERJAAN_LAINNYA && (
+                <input
+                  type="text"
+                  value={pekerjaanLainnya}
+                  onChange={(e) => setPekerjaanLainnya(e.target.value)}
+                  placeholder={t.placeholderPekerjaanLainnya}
+                  className="mt-2 w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-700/20 shadow-sm placeholder-gray-300"
+                />
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-brand-900/80 mb-1.5">{t.tempatTinggal} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={tempatTinggal}
@@ -178,6 +256,12 @@ export default function ProfilePage() {
                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-700 focus:ring-2 focus:ring-brand-700/20 shadow-sm placeholder-gray-300"
               />
             </div>
+
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, File as FileIcon, Gamepad2, Lock, Home } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
-import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
+import { getQuizById, getQuizIdsByCourse, getPassedQuizIds } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
 import { getCourseMinigames, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +42,39 @@ function hasTextContent(content: string | null | undefined): boolean {
   return text.length > 0;
 }
 
+// Timer terisolasi: tick 1 detik hanya me-render komponen kecil ini,
+// bukan seluruh halaman (agar <iframe> file tidak ikut rekonsiliasi tiap detik).
+function ElapsedTimer({
+  accumulatedRef,
+  sessionStartRef,
+  enabled,
+}: {
+  accumulatedRef: { current: number };
+  sessionStartRef: { current: number | null };
+  enabled: boolean;
+}) {
+  const [elapsed, setElapsed] = useState(accumulatedRef.current);
+  useEffect(() => {
+    if (!enabled) return;
+    setElapsed(
+      accumulatedRef.current +
+        (sessionStartRef.current !== null ? Math.floor((Date.now() - sessionStartRef.current) / 1000) : 0)
+    );
+    const id = setInterval(() => {
+      if (sessionStartRef.current !== null) {
+        setElapsed(accumulatedRef.current + Math.floor((Date.now() - sessionStartRef.current) / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [enabled, accumulatedRef, sessionStartRef]);
+  return (
+    <span className="bg-white text-[#3B387E] border-2 border-[#3B387E] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+      <Clock className="w-3 h-3" />
+      {String(Math.floor(elapsed / 3600)).padStart(2, "0")}:{String(Math.floor((elapsed % 3600) / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
+    </span>
+  );
+}
+
 export default function MateriDetail() {
   const router = useRouter();
   const params = useParams();
@@ -62,7 +95,6 @@ export default function MateriDetail() {
   const [loading, setLoading] = useState(true);
   const [showProfileGate, setShowProfileGate] = useState(false);
   const [mgList, setMgList] = useState<CourseMinigame[]>([]);
-  const [courseElapsed, setCourseElapsed] = useState(0);
   const courseAccumulatedRef = useRef(0);
   const courseSessionStartRef = useRef<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
@@ -71,6 +103,7 @@ export default function MateriDetail() {
 
   useEffect(() => {
     if (!courseId) return;
+    let cancelled = false;
     const fetchData = async () => {
       try {
         const [c, secs, mgs] = await Promise.all([
@@ -78,52 +111,53 @@ export default function MateriDetail() {
           getCourseSections(courseId),
           getCourseMinigames(courseId).catch(() => [] as CourseMinigame[]),
         ]);
+        if (cancelled) return;
         setCourse(c);
         setSections(secs);
         setMgList(mgs);
+        // Tampilkan viewer secepatnya — jangan tunggu progres/quiz.
+        setLoading(false);
 
-        // Restore user progress
+        // Progres & quiz dimuat di background agar tidak memblokir file viewer.
         if (user) {
-          const [uc, quizIds] = await Promise.all([
-            getUserCourse(user.id, courseId),
-            getQuizIdsByCourse(courseId).catch(() => [] as string[]),
-          ]);
-          if (uc) {
-            userUrutan.current = uc.current_urutan;
-            setProgressUrutan(uc.current_urutan);
-            if (uc.current_urutan > 0) {
-              const idx = secs.findIndex((s) => s.data.urutan === uc.current_urutan);
-              if (idx >= 0) setActiveIdx(idx);
-            }
-          } else {
-            await enrollCourse(user.id, courseId);
-          }
-
-          // Mark passed quizzes
-          if (quizIds.length > 0) {
-            const passedIds: string[] = [];
-            for (const qid of quizIds) {
-              const results = await getUserQuizResults(user.id, qid);
-              if (results?.some((r) => r.passed)) {
-                passedIds.push(qid);
+          try {
+            const [uc, quizIds] = await Promise.all([
+              getUserCourse(user.id, courseId),
+              getQuizIdsByCourse(courseId).catch(() => [] as string[]),
+            ]);
+            if (cancelled) return;
+            if (uc) {
+              userUrutan.current = uc.current_urutan;
+              setProgressUrutan(uc.current_urutan);
+              if (uc.current_urutan > 0) {
+                const idx = secs.findIndex((s) => s.data.urutan === uc.current_urutan);
+                if (idx >= 0) setActiveIdx(idx);
               }
+            } else {
+              await enrollCourse(user.id, courseId).catch(() => null);
             }
-            setCompletedIds(passedIds);
-          }
 
-          // Init course timer
-          courseAccumulatedRef.current = uc?.total_duration_seconds ?? 0;
-          courseSessionStartRef.current = Date.now();
-          setCourseElapsed(courseAccumulatedRef.current);
-          setTimerReady(true);
+            // 1 query batch, bukan N query serial.
+            if (quizIds.length > 0) {
+              const passedIds = await getPassedQuizIds(user.id, quizIds).catch(() => [] as string[]);
+              if (!cancelled) setCompletedIds(passedIds);
+            }
+
+            courseAccumulatedRef.current = uc?.total_duration_seconds ?? 0;
+            courseSessionStartRef.current = Date.now();
+            if (!cancelled) setTimerReady(true);
+          } catch {
+            // progres gagal -> viewer tetap jalan
+          }
         }
       } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchData();
+    return () => {
+      cancelled = true;
+    };
   }, [courseId, user]);
 
   useEffect(() => {
@@ -163,12 +197,7 @@ export default function MateriDetail() {
   useEffect(() => {
     if (!timerReady || !user) return;
 
-    const interval = setInterval(() => {
-      if (courseSessionStartRef.current !== null) {
-        setCourseElapsed(courseAccumulatedRef.current + Math.floor((Date.now() - courseSessionStartRef.current) / 1000));
-      }
-    }, 1000);
-
+    // Autosave 10 detik — tanpa interval 1 detik di parent agar iframe tidak ikut re-render.
     const autoSave = setInterval(() => saveTimer(), 10000);
 
     const handleVisibility = () => {
@@ -186,7 +215,6 @@ export default function MateriDetail() {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      clearInterval(interval);
       clearInterval(autoSave);
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -248,10 +276,11 @@ export default function MateriDetail() {
         </Link>
         <div className="flex items-center gap-3">
           {user && (
-            <span className="bg-white text-[#3B387E] border-2 border-[#3B387E] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-              <Clock className="w-3 h-3" />
-              {String(Math.floor(courseElapsed / 3600)).padStart(2, "0")}:{String(Math.floor((courseElapsed % 3600) / 60)).padStart(2, "0")}:{String(courseElapsed % 60).padStart(2, "0")}
-            </span>
+            <ElapsedTimer
+              accumulatedRef={courseAccumulatedRef}
+              sessionStartRef={courseSessionStartRef}
+              enabled={timerReady}
+            />
           )}
           <Link
             href="/"
@@ -351,12 +380,14 @@ export default function MateriDetail() {
                       const rawUrl = activeSection.data.file_url as string;
                       const proxied = getProxiedUrl(rawUrl);
                       const url = proxied || rawUrl;
+                      const fileId = activeSection.data.id;
 
+                      // Deteksi tipe dari URL asli (URL proxy /api/... tidak punya ekstensi).
                       const googleDriveId = rawUrl.match(/\/file\/d\/([^/?#]+)/)?.[1];
-                      const isPdf = rawUrl?.match(/\.pdf(\?|$)/i) || url?.match(/\.pdf(\?|$)/i);
-                      const isImage = rawUrl?.match(/\.(png|jpe?g|gif|webp|svg)(\?|$)/i) || url?.match(/\.(png|jpe?g|gif|webp|svg)(\?|$)/i);
-                      const isOffice = rawUrl?.match(/\.(docx?|xlsx?|pptx?)(\?|$)/i);
-                      const isAbsolute = /^https?:\/\//i.test(url);
+                      const isPdf = /\.pdf(\?|$)/i.test(rawUrl);
+                      const isImage = /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(rawUrl);
+                      const isOffice = /\.(docx?|xlsx?|pptx?)(\?|$)/i.test(rawUrl);
+                      const isText = /\.(txt|html)(\?|$)/i.test(rawUrl);
                       const rawIsAbsolute = /^https?:\/\//i.test(rawUrl);
 
                       const spinner = fileLoading && (
@@ -372,25 +403,33 @@ export default function MateriDetail() {
                           <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
                             {spinner}
                             <iframe
+                              key={fileId}
                               src={`https://drive.google.com/file/d/${googleDriveId}/preview?rm=minimal`}
                               className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
                               title="File Preview"
                               allow="fullscreen"
+                              loading="lazy"
                               onLoad={() => setFileLoading(false)}
+                              onError={() => setFileLoading(false)}
                             />
                           </div>
                         );
                       }
 
                       if (isPdf) {
+                        // PDF Garage sudah via /api/file-proxy (streaming + Range),
+                        // PDF lain langsung (1 hop, progressive-render native).
                         return (
                           <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
                             {spinner}
                             <iframe
+                              key={fileId}
                               src={`${url}#toolbar=0&navpanes=0`}
                               className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
                               title="File Preview"
+                              loading="lazy"
                               onLoad={() => setFileLoading(false)}
+                              onError={() => setFileLoading(false)}
                             />
                           </div>
                         );
@@ -405,11 +444,14 @@ export default function MateriDetail() {
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
+                              key={fileId}
                               src={url}
                               alt={activeSection.data.title}
                               className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl pointer-events-none"
                               draggable={false}
+                              loading="lazy"
                               onLoad={() => setFileLoading(false)}
+                              onError={() => setFileLoading(false)}
                               onContextMenu={(e) => e.preventDefault()}
                             />
                           </div>
@@ -417,36 +459,55 @@ export default function MateriDetail() {
                       }
 
                       if (isOffice && rawIsAbsolute) {
+                        // Office viewer butuh URL publik absolut, jadi pakai rawUrl.
                         return (
                           <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
                             {spinner}
                             <iframe
+                              key={fileId}
                               src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`}
                               className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
                               title="File Preview"
+                              loading="lazy"
                               onLoad={() => setFileLoading(false)}
+                              onError={() => setFileLoading(false)}
                             />
                           </div>
                         );
                       }
 
-                      // Fallback view-only: iframe tanpa tombol/link download.
-                      // Untuk URL publik, pakai Google Docs viewer agar bisa preview.
-                      const fallbackSrc =
-                        rawIsAbsolute && !isAbsolute
-                          ? rawUrl
-                          : rawIsAbsolute
-                            ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(rawUrl)}`
-                            : url;
+                      if (isText && rawIsAbsolute) {
+                        // txt/html dirender native browser (1 hop, tanpa via Google).
+                        return (
+                          <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
+                            {spinner}
+                            <iframe
+                              key={fileId}
+                              src={rawUrl}
+                              className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E] bg-white"
+                              title="File Preview"
+                              loading="lazy"
+                              onLoad={() => setFileLoading(false)}
+                              onError={() => setFileLoading(false)}
+                            />
+                          </div>
+                        );
+                      }
+
+                      // Fallback view-only TANPA Google Docs viewer:
+                      // gview mengunduh ulang seluruh file di server Google dulu
+                      // (2x hop) sehingga paling lambat. Untuk tipe tak dikenal
+                      // (zip/rar/dll) tampilkan pesan saja — tetap tanpa link unduh.
                       return (
-                        <div className="relative select-none" onContextMenu={(e) => e.preventDefault()}>
-                          {spinner}
-                          <iframe
-                            src={isAbsolute && !isPdf ? fallbackSrc : url}
-                            className="w-full h-[70vh] rounded-2xl border-2 border-[#3B387E]"
-                            title="File Preview"
-                            onLoad={() => setFileLoading(false)}
-                          />
+                        <div
+                          className="relative select-none flex items-center justify-center bg-[#FFF6EA] rounded-2xl border-2 border-[#3B387E] p-8 text-center"
+                          onContextMenu={(e) => e.preventDefault()}
+                        >
+                          <p className="text-sm text-[#3B387E]/70">
+                            {locale === "id"
+                              ? "Pratinjau tidak tersedia untuk tipe file ini. Silakan baca materi teks di tab Materi."
+                              : "Preview is not available for this file type. Please read the text in the Material tab."}
+                          </p>
                         </div>
                       );
                     })()
