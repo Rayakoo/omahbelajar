@@ -13,11 +13,10 @@ const NAV_LINKS = [
   { label: "Orang tua", href: "/orang-tua" },
   { label: "Umum", href: "/umum" },
   { label: "Mini games", href: "/minigames" },
-  { label: "Saran", href: "/#saran" },
+  { label: "Saran", href: "/saran" },
 ];
 
 function isLinkActive(pathname: string, href: string) {
-  if (href === "/#saran") return false;
   if (href === "/minigames") return pathname.startsWith("/minigames");
   return pathname === href;
 }

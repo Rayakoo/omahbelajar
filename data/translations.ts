@@ -550,6 +550,38 @@ export const id = {
     gagalKirim: "Gagal mengirim cerita. Silakan coba lagi.",
   },
 
+  saran: {
+    badge: "RUANG SARAN",
+    heroTitle: "Sampaikan Saranmu",
+    heroDesc:
+      "Punya ide, masukan, atau kritik? Ceritakan di sini. Saran dapat dikirim secara anonim.",
+    tulisSaran: "Tulis Saran",
+    kawanKita: "Saran Kawan Kita",
+    kawanKitaDesc:
+      "Masukan dari teman-teman yang membantu Omah Belajar tumbuh.",
+    memuat: "Memuat saran...",
+    kosong: "Belum ada saran yang ditampilkan.",
+    formTitle: "Tulis Saranmu",
+    formDesc:
+      "Saran yang kamu kirim akan ditinjau admin sebelum ditampilkan di halaman ini.",
+    nama: "Nama",
+    namaPlaceholder: "Nama atau nama panggilan",
+    anonimCheckbox: "Kirim sebagai anonim",
+    kategori: "Kategori",
+    isi: "Saran / Masukan",
+    isiPlaceholder: "Tulis saran, masukan, atau idemu di sini...",
+    kirim: "Kirim Saran",
+    mengirim: "Mengirim...",
+    berhasilTitle: "Saran terkirim!",
+    berhasilDesc:
+      "Terima kasih. Saranmu akan ditampilkan setelah ditinjau admin.",
+    kirimLagi: "Kirim saran lagi",
+    gagal: "Gagal mengirim saran. Silakan coba lagi.",
+    wajibIsi: "Tulis saranmu terlebih dahulu.",
+    contohSaran: "Contoh saran",
+    anonim: "Anonim",
+  },
+
   admin: {
     laporan: "Daftar Laporan",
     kelolaCourse: "Kelola Course",
@@ -1114,6 +1146,38 @@ export const en: typeof id = {
     bagikanBtn: "Share",
     pilihKategori: "Please select or fill in a story category",
     gagalKirim: "Failed to send story. Please try again.",
+  },
+
+  saran: {
+    badge: "SUGGESTION BOX",
+    heroTitle: "Share Your Feedback",
+    heroDesc:
+      "Have an idea, feedback, or critique? Let us know here. You can send it anonymously.",
+    tulisSaran: "Write a Suggestion",
+    kawanKita: "What Friends Are Saying",
+    kawanKitaDesc:
+      "Feedback from friends that helps Omah Belajar grow.",
+    memuat: "Loading suggestions...",
+    kosong: "No suggestions to show yet.",
+    formTitle: "Write Your Suggestion",
+    formDesc:
+      "Your suggestion will be reviewed by an admin before it appears on this page.",
+    nama: "Name",
+    namaPlaceholder: "Name or nickname",
+    anonimCheckbox: "Send anonymously",
+    kategori: "Category",
+    isi: "Suggestion / Feedback",
+    isiPlaceholder: "Write your suggestion, feedback, or idea here...",
+    kirim: "Send Suggestion",
+    mengirim: "Sending...",
+    berhasilTitle: "Suggestion sent!",
+    berhasilDesc:
+      "Thank you. Your suggestion will appear after an admin reviews it.",
+    kirimLagi: "Send another suggestion",
+    gagal: "Failed to send your suggestion. Please try again.",
+    wajibIsi: "Please write your suggestion first.",
+    contohSaran: "Sample suggestion",
+    anonim: "Anonymous",
   },
 
   admin: {
