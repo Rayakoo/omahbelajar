@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MINIGAMES } from "@/data/minigames";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
@@ -84,61 +85,19 @@ export default function MinigamesPage() {
             })}
           </div>
 
-          {/* Banner horizontal Unsolved Case — gaya berkas kasus */}
+          {/* Banner horizontal Unsolved Case — kartu gambar, skalanya mengikuti lebar layar */}
           <Link
             href={unsolved.slug}
-            className="block relative rounded-[30px] overflow-hidden border border-[#c4a882] bg-[#f8f1e5] shadow-[0_18px_38px_rgba(92,61,46,0.18)] hover:-translate-y-1 transition-all duration-300"
+            className="group block relative w-full overflow-hidden rounded-[16px] sm:rounded-[22px] md:rounded-[30px] border border-[#c4a882] bg-[#f8f1e5] shadow-[0_18px_38px_rgba(92,61,46,0.18)] hover:-translate-y-1 hover:shadow-[0_24px_46px_rgba(92,61,46,0.26)] transition-all duration-300"
           >
-            {/* Lipatan amplop atas */}
-            <div
-              className="absolute left-0 right-0 top-0 z-20 h-7"
-              style={{
-                background: "linear-gradient(180deg, #c4b098 0%, #b8a48a 100%)",
-                clipPath: "polygon(0 0, 50% 100%, 100% 0)",
-                borderBottom: "2px solid rgba(92,61,46,0.16)",
-              }}
+            <Image
+              src="/card_detective.png"
+              alt={locale === "id" ? unsolved.title : unsolved.titleEn}
+              width={1213}
+              height={421}
+              sizes="(max-width: 1152px) 100vw, 1152px"
+              className="block w-full h-auto select-none transition-transform duration-500 group-hover:scale-[1.02]"
             />
-
-            <div className="relative px-5 md:px-8 pt-10 pb-6 text-[#3c2415]">
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <span className="rounded-full border border-[#d4c4a8] bg-[#f7f1df] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#5c3d2e]">
-                  {locale === "id" ? "Surat Kasus" : "Case File"}
-                </span>
-                <span className="text-[10px] font-semibold text-[#8b7355] italic">Detektif</span>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center gap-5">
-                {/* Isi berkas */}
-                <div
-                  className="relative flex-1 overflow-hidden rounded-[22px] border-2 border-[#b8a48a] shadow-md"
-                  style={{
-                    background: "linear-gradient(160deg, #d4c4a8 0%, #c4b098 50%, #d4c4a8 100%)",
-                  }}
-                >
-                  <div
-                    className="absolute inset-0 opacity-[0.06]"
-                    style={{
-                      backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, #5c3d2e 10px, #5c3d2e 11px)",
-                    }}
-                  />
-                  <div className="relative px-5 py-5 md:px-7 md:py-6 md:text-left text-center">
-                    <p className="text-[10px] text-[#8b7355] font-mono uppercase tracking-[0.18em] mb-2">
-                      {locale === "id" ? "Judul Berkas" : "File Title"}
-                    </p>
-                    <h3 className="font-extrabold text-lg md:text-2xl leading-snug text-[#3c2415] uppercase tracking-wider">
-                      {locale === "id" ? unsolved.title : unsolved.titleEn}
-                    </h3>
-                    <div className="w-12 h-[2px] bg-[#8b7355]/35 my-3 md:mx-0 mx-auto" />
-                    <p className="text-xs md:text-sm text-[#5c3d2e] leading-relaxed font-medium max-w-xl">
-                      {locale === "id" ? unsolved.description : unsolved.descriptionEn}
-                    </p>
-                    <div className="mt-3 text-[10px] text-[#5c3d2e] font-bold font-mono uppercase tracking-[0.25em]">
-                      {locale === "id" ? "Sangat Rahasia" : "Top Secret"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </Link>
         </div>
       </div>
